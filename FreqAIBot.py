@@ -11,13 +11,13 @@ from freqtrade.strategy import IntParameter, DecimalParameter, IStrategy
 from freqtrade.persistence import Trade
 import freqtrade.vendor.qtpylib.indicators as qtpylib
 
-# Verbesserte Logging-Konfiguration
+# Improved logging configuration
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 def safe_run(func):
     """
-    Decorator für sicheres Ausführen von Funktionen
+    Decorator for safe execution of functions
     """
     def wrapper(*args, **kwargs):
         try:
@@ -104,17 +104,17 @@ class FreqAIFuturesStrategy(IStrategy):
         logger.info(f"Populating indicators for pair: {metadata.get('pair')}")
         
         try:
-            # Basis-Indikatoren
+            # Base indicators
             dataframe['rsi'] = ta.RSI(dataframe['close'], timeperiod=14)
             dataframe['mfi'] = ta.MFI(dataframe['high'], dataframe['low'], 
                                     dataframe['close'], dataframe['volume'], timeperiod=14)
             
-            # Trend Indikatoren
+            # Trend indicators
             dataframe['ema_9'] = ta.EMA(dataframe['close'], timeperiod=9)
             dataframe['ema_21'] = ta.EMA(dataframe['close'], timeperiod=21)
             dataframe['trend'] = np.where(dataframe['ema_9'] > dataframe['ema_21'], 1, -1)
             
-            # Initialisiere do_predict
+            # Initialize do_predict
             dataframe['do_predict'] = 1
             
             logger.info(f"Indicators populated successfully for {metadata.get('pair')}")
@@ -129,11 +129,11 @@ class FreqAIFuturesStrategy(IStrategy):
         logger.info(f"Feature engineering for {metadata.get('pair')} with period {period}")
         
         try:
-            # Preis Features
+            # Price features
             dataframe['price_mean'] = dataframe['close'].rolling(period).mean()
             dataframe['price_std'] = dataframe['close'].rolling(period).std()
             
-            # Volumen Features
+            # Volume features
             dataframe['volume_mean'] = dataframe['volume'].rolling(window=period).mean()
             dataframe['volume_std'] = dataframe['volume'].rolling(window=period).std()
             
@@ -170,7 +170,7 @@ class FreqAIFuturesStrategy(IStrategy):
                 logger.info(f"Waiting for model training to complete for {pair}")
                 return dataframe
             
-            # Super einfache Entry-Bedingungen
+            # Super simple entry conditions
             long_conditions = (
                 (dataframe['do_predict'] == 1) &
                 (dataframe['&s-up_or_down_prediction'] > 0.5)
@@ -203,7 +203,7 @@ class FreqAIFuturesStrategy(IStrategy):
             if '&s-up_or_down_prediction' not in dataframe.columns:
                 return dataframe
             
-            # Super einfache Exit-Bedingungen
+            # Super simple exit conditions
             long_exit_conditions = (
                 (dataframe['do_predict'] == 1) &
                 (dataframe['&s-up_or_down_prediction'] < 0.48)
@@ -231,8 +231,8 @@ class FreqAIFuturesStrategy(IStrategy):
                        min_stake: float, max_stake: float, leverage: float,
                        entry_tag: Optional[str], side: str, **kwargs) -> float:
         
-        return min_stake  # Minimales Risiko für den Test
+        return min_stake  # Minimum risk for testing
 
     def leverage(self, pair: str, current_time: datetime, current_rate: float,
             proposed_leverage: float, max_leverage: float, side: str, **kwargs) -> float:
-        return 1.0  # Minimaler Hebel für den Test
+        return 1.0  # Minimum leverage for testing

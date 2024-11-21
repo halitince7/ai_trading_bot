@@ -11,28 +11,28 @@ logger = logging.getLogger(__name__)
 
 class LightGBMRegressor(BaseRegressionModel):
     """
-    LightGBM-basiertes Regressionsmodell für FreqAI mit verbessertem Logging und Fehlerbehandlung
+    LightGBM-based regression model for FreqAI with improved logging and error handling
     """
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.model = None
-        logger.info("LightGBM Regressor initialisiert")
+        logger.info("LightGBM Regressor initialized")
 
     def fit(self, data_dictionary: Dict, dk: FreqaiDataKitchen, **kwargs) -> Any:
         """
-        Verbessertes Model-Training mit detailliertem Logging
+        Enhanced model training with detailed logging
         """
         try:
             X = data_dictionary["train_features"]
             y = data_dictionary["train_labels"]
             
-            # Erweiterte Logging-Informationen
+            # Extended logging information
             logger.info(f"""
-            Starte Model-Training:
-            - Anzahl Samples: {len(X)}
-            - Anzahl Features: {X.shape[1]}
-            - Feature Namen: {', '.join(dk.training_features_list)}
-            - Label Verteilung: Positiv={sum(y > 0)}, Negativ={sum(y <= 0)}
+            Starting Model Training:
+            - Number of Samples: {len(X)}
+            - Number of Features: {X.shape[1]}
+            - Feature Names: {', '.join(dk.training_features_list)}
+            - Label Distribution: Positive={sum(y > 0)}, Negative={sum(y <= 0)}
             """)
 
             # Model Parameter Logging
@@ -50,21 +50,21 @@ class LightGBMRegressor(BaseRegressionModel):
                 "verbose": -1
             }
             
-            logger.info(f"Model Parameter: {model_params}")
+            logger.info(f"Model Parameters: {model_params}")
 
             model = LGBM(**model_params)
             model.fit(X, y)
             self.model = model
 
-            # Feature Importance Analyse
+            # Feature Importance Analysis
             feature_imp = pd.DataFrame({
                 'feature': dk.training_features_list,
                 'importance': model.feature_importances_
             }).sort_values('importance', ascending=False)
 
             logger.info(f"""
-            Training abgeschlossen:
-            Top 5 wichtigste Features:
+            Training completed:
+            Top 5 most important features:
             {feature_imp.head().to_string()}
             """)
 
@@ -72,9 +72,9 @@ class LightGBMRegressor(BaseRegressionModel):
 
         except Exception as e:
             logger.error(f"""
-            Fehler während des Trainings:
+            Error during training:
             - Error: {str(e)}
-            - Daten Shape: X={X.shape if 'X' in locals() else 'N/A'}, y={y.shape if 'y' in locals() else 'N/A'}
+            - Data Shape: X={X.shape if 'X' in locals() else 'N/A'}, y={y.shape if 'y' in locals() else 'N/A'}
             """)
             raise e
 
@@ -82,10 +82,10 @@ class LightGBMRegressor(BaseRegressionModel):
         self, unfiltered_df: pd.DataFrame, dk: FreqaiDataKitchen, **kwargs
     ) -> Tuple[npt.NDArray[np.float_], npt.NDArray[np.float_], pd.DataFrame]:
         """
-        Verbesserte Vorhersagen mit Konfidenz-Scoring
+        Enhanced predictions with confidence scoring
         """
         try:
-            # Feature Extraktion
+            # Feature Extraction
             dk.find_features(unfiltered_df)
             filtered_df, _ = dk.filter_features(
                 unfiltered_df, dk.training_features_list, training_filter=False
@@ -93,14 +93,14 @@ class LightGBMRegressor(BaseRegressionModel):
 
             predictions = self.model.predict(filtered_df)
             
-            # Verbesserte Konfidenz-Berechnung
+            # Enhanced confidence calculation
             do_predict = np.ones(len(predictions))
             
-            # Konfidenz-basierte Filterung
-            confidence_threshold = 0.65  # Anpassbar
+            # Confidence-based filtering
+            confidence_threshold = 0.65  # Adjustable
             if hasattr(self.model, 'predict_proba'):
                 predictions_proba = self.model.predict_proba(filtered_df)
-                # Setze do_predict auf 0 für niedrige Konfidenz
+                # Set do_predict to 0 for low confidence
                 max_proba = np.max(predictions_proba, axis=1)
                 do_predict[max_proba < confidence_threshold] = 0
             else:
@@ -109,13 +109,13 @@ class LightGBMRegressor(BaseRegressionModel):
             logger.info(f"""
             Prediction Stats:
             - Samples: {len(predictions)}
-            - Durchschnitt: {predictions.mean():.4f}
+            - Average: {predictions.mean():.4f}
             - Std: {predictions.std():.4f}
-            - Konfidente Signale: {sum(do_predict)}/{len(do_predict)}
+            - Confident Signals: {sum(do_predict)}/{len(do_predict)}
             """)
 
             return predictions, do_predict, predictions_proba
 
         except Exception as e:
-            logger.error(f"Vorhersage-Fehler: {str(e)}")
+            logger.error(f"Prediction Error: {str(e)}")
             raise e

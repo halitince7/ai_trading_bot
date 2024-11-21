@@ -15,6 +15,7 @@ charset-normalizer==3.4.0
 click==8.1.7
 cryptography==43.0.3
 datasieve==0.1.7
+dateparser==1.2.0
 fastapi==0.115.5
 freqtrade==2024.10
 freqtrade-client==2024.10
@@ -47,16 +48,19 @@ pyarrow==18.0.0
 pycares==4.4.0
 pycoingecko==3.2.0
 pycparser==2.22
+pycryptodome==3.21.0
 pydantic==2.10.0
 pydantic_core==2.27.0
 Pygments==2.18.0
 PyJWT==2.10.0
+python-binance==1.0.22
 python-dateutil==2.9.0.post0
 python-rapidjson==1.20
 python-telegram-bot==21.7
 pytz==2024.2
 questionary==2.0.1
 referencing==0.35.1
+regex==2024.11.6
 requests==2.32.3
 rich==13.9.4
 rpds-py==0.21.0
@@ -75,6 +79,8 @@ technical==1.4.4
 threadpoolctl==3.5.0
 typing_extensions==4.12.2
 tzdata==2024.2
+tzlocal==5.2
+ujson==5.10.0
 urllib3==2.2.3
 uvicorn==0.32.1
 wcwidth==0.2.13
