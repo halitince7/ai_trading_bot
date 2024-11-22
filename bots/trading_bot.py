@@ -4,14 +4,14 @@ from binance.exceptions import BinanceAPIException
 import pandas as pd
 import time
 from datetime import datetime
-from bots.config import config_halit, config_erkan
+from config import config_halit, config_erkan
 
 # Setup logging configuration
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('logs/trading_bot.log'),
+        logging.FileHandler('../logs/trading_bot.log'),
         logging.StreamHandler()
     ]
 )

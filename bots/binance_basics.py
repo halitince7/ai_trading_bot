@@ -2,7 +2,7 @@ from binance.client import Client
 from datetime import datetime
 from typing import Dict
 import logging
-from bots.config import config_halit, config_erkan  # import API keys from config.py
+from config import config_halit, config_erkan  # import API keys from config.py
 
 BASE_ASSET = "NOT"     # The crypto you're trading (ETH)
 QUOTE_ASSET = "USDT"   # The currency you're trading against (USDT)
@@ -13,7 +13,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('account_info.log'),
+        logging.FileHandler('../logs/account_info.log'),
         logging.StreamHandler()
     ]
 )
@@ -41,7 +41,7 @@ def get_account_balance(client: Client) -> Dict:
             free = float(balance['free'])
             locked = float(balance['locked'])
             
-            if (free > 0 or locked > 0):
+            if (free > 0 or locked > 0) and (balance['asset'] == BASE_ASSET or balance['asset'] == QUOTE_ASSET):
                 logger.info(f"\n{balance['asset']}:")
                 logger.info(f"Available: {free}")
                 logger.info(f"Locked: {locked}")
