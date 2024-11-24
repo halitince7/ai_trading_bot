@@ -4,7 +4,7 @@ from typing import Dict
 import logging
 from config import config_halit, config_erkan  # import API keys from config.py
 
-BASE_ASSET = "NOT"     # The crypto you're trading (ETH)
+BASE_ASSET = "PEPE"     # The crypto you're trading (ETH)
 QUOTE_ASSET = "USDT"   # The currency you're trading against (USDT)
 TRADING_SYMBOL = f"{BASE_ASSET}{QUOTE_ASSET}"
 
@@ -119,6 +119,76 @@ def get_open_orders(client: Client):
         logger.error(f"Failed to get open orders: {e}")
         return []
 
+def get_open_positions(client: Client):
+    """Get all open positions with detailed information including entry time"""
+    try:
+        positions = client.futures_position_information()
+        
+        logger.info("\n=== Open Positions ===")
+        has_positions = False
+        
+        for position in positions:
+            amount = float(position['positionAmt'])
+            if amount != 0:  # Only show positions with non-zero amount
+                has_positions = True
+                symbol = position['symbol']
+                
+                # Get recent trades to find entry time
+                trades = client.futures_account_trades(symbol=symbol, limit=50)
+                entry_time = None
+                
+                # Find the earliest trade that matches our position direction
+                for trade in reversed(trades):
+                    trade_amt = float(trade['qty'])
+                    is_buyer = trade['buyer']
+                    if (amount > 0 and is_buyer) or (amount < 0 and not is_buyer):
+                        entry_time = datetime.fromtimestamp(trade['time']/1000)
+                        break
+                
+                last_update_time = datetime.fromtimestamp(float(position['updateTime'])/1000)
+                
+                # Basic position information
+                logger.info(f"\nSymbol: {position['symbol']}")
+                logger.info(f"Position Amount: {position['positionAmt']}")
+                logger.info(f"Entry Price: {position['entryPrice']}")
+                logger.info(f"Mark Price: {position['markPrice']}")
+                logger.info(f"Unrealized PNL: {position['unRealizedProfit']}")
+                
+                # Optional information - check if exists
+                if 'liquidationPrice' in position:
+                    logger.info(f"Liquidation Price: {position['liquidationPrice']}")
+                
+                # Get leverage from futures account
+                try:
+                    leverage_info = client.futures_leverage_bracket(symbol=symbol)
+                    if leverage_info:
+                        logger.info(f"Max Leverage: {leverage_info[0]['brackets'][0]['initialLeverage']}x")
+                except:
+                    pass
+                
+                logger.info(f"Entry Time: {entry_time if entry_time else 'Unknown'}")
+                logger.info(f"Last Updated: {last_update_time}")
+                
+                # Optional position details
+                if 'positionSide' in position:
+                    logger.info(f"Position Side: {position['positionSide']}")
+                
+                # Calculate ROI
+                entry_price = float(position['entryPrice'])
+                mark_price = float(position['markPrice'])
+                if entry_price > 0:
+                    roi = ((mark_price - entry_price) / entry_price) * 100
+                    roi = roi if amount > 0 else -roi  # Adjust ROI sign for short positions
+                    logger.info(f"ROI: {roi:.2f}%")
+        
+        if not has_positions:
+            logger.info("No open positions")
+            
+        return positions
+    except Exception as e:
+        logger.error(f"Failed to get open positions: {e}")
+        return []
+
 def main():
     try:
         logger.info("Initializing Binance client...")
@@ -130,6 +200,7 @@ def main():
         get_account_status(client)
         get_trade_history(client)
         get_open_orders(client)
+        get_open_positions(client)
         
     except Exception as e:
         logger.error(f"An error occurred: {e}")
