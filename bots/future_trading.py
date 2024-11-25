@@ -308,6 +308,57 @@ class BinanceFuturesTrader:
             logger.error(f"Failed to get income history: {error}")
             raise
 
+    def close_all_positions(self) -> None:
+        """Close all open positions and cancel their orders"""
+        try:
+            # Get all open positions
+            open_positions = self.get_positions()
+            if not open_positions:
+                logger.info("No open positions to close")
+                return
+
+            logger.info(f"Closing {len(open_positions)} open positions")
+            
+            # Close each position
+            for symbol in open_positions:
+                try:
+                    # Get position information
+                    position_info = self.get_position_pnl(symbol)
+                    if not position_info:
+                        continue
+
+                    position_size = position_info['position_size']
+                    if position_size == 0:
+                        continue
+
+                    # Determine side for closing (opposite of current position)
+                    side = 'SELL' if position_size > 0 else 'BUY'
+                    
+                    # Cancel any existing orders first
+                    self.close_open_orders(symbol)
+                    
+                    # Place market order to close position
+                    qty = abs(position_size)
+                    self.client.new_order(
+                        symbol=symbol,
+                        side=side,
+                        type='MARKET',
+                        quantity=qty,
+                        reduceOnly=True  # Ensure we only close existing position
+                    )
+                    
+                    logger.info(f"Closed position for {symbol}: {qty} @ market price")
+                    
+                except ClientError as e:
+                    logger.error(f"Failed to close position for {symbol}: {e}")
+                    continue
+                
+            logger.info("Finished closing all positions")
+            
+        except ClientError as error:
+            logger.error(f"Failed to close all positions: {error}")
+            raise
+
 def main():
     """Main trading loop"""
     trader = BinanceFuturesTrader(
