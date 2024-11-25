@@ -18,7 +18,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler(Path('../logs/future_trading.log')),
+        logging.FileHandler(Path('future_trading.log')),
         logging.StreamHandler()
     ]
 )
