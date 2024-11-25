@@ -1,99 +1,152 @@
-# AI Bitcoin Trading Bot
+# AI Cryptocurrency Trading Bot with LSTM Prediction
 
-A sophisticated automated trading bot for Bitcoin on Binance, implementing multiple technical analysis strategies including Moving Average Crossover and Linear Regression analysis.
+An automated trading bot for cryptocurrency futures trading on Binance, leveraging LSTM (Long Short-Term Memory) neural networks for price prediction and automated trading execution.
 
-## Features
+## Overview
 
-- **Multiple Trading Strategies**
-  - Moving Average Crossover (20/50 periods)
-  - Linear Regression with Dynamic Bands
-  - Combined signal confirmation for reduced false positives
+This bot combines deep learning with automated trading to create a sophisticated cryptocurrency trading system. It uses LSTM neural networks to predict price movements and automatically executes trades on Binance Futures based on these predictions.
 
-- **Real-time Trading**
-  - Automatic order execution on Binance
-  - Market order support
-  - Balance management
-  - Error handling and continuous operation
+## Key Features
 
-- **Technical Analysis**
-  - Dynamic trend identification
-  - Support/Resistance levels through regression bands
-  - Oversold/Overbought detection
-  - Automated decision making
+- **LSTM Price Prediction**
+  - Uses historical price data to predict future movements
+  - Implements a sliding window approach for time series analysis
+  - Normalizes data for better prediction accuracy
+  - Provides directional signals (up/down) based on prediction confidence
 
-## Prerequisites
+- **Automated Futures Trading**
+  - Real-time order execution on Binance Futures
+  - Supports both long and short positions
+  - Automatic position management with stop-loss and take-profit orders
+  - Handles multiple trading pairs simultaneously
+  - Implements isolated margin trading with configurable leverage
+
+- **Risk Management**
+  - Configurable position sizes and leverage
+  - Automatic stop-loss and take-profit placement
+  - Continuous monitoring of open positions
+  - Error handling and graceful failure recovery
+  - Minimum notional value checks for order placement
+
+## How It Works
+
+### 1. LSTM Prediction System
+The `LSTMPredictor` class implements the price prediction logic:
+- Takes historical price data with a configurable lookback period
+- Normalizes the data using MinMaxScaler
+- Trains an LSTM model with the following architecture:
+  - LSTM layer (50 units) with return sequences
+  - Dropout layer (20%)
+  - LSTM layer (50 units)
+  - Dropout layer (20%)
+  - Dense layers for final prediction
+- Generates trading signals based on predicted price movements
+
+### 2. Trading Execution
+The `BinanceFuturesTrader` class handles all trading operations:
+- Monitors multiple trading pairs simultaneously
+- Places market orders based on LSTM predictions
+- Sets leverage and margin type for each trade
+- Implements automatic stop-loss and take-profit orders
+- Manages open positions and orders
+
+### 3. Main Trading Loop
+The main loop orchestrates the entire trading process:
+1. Monitors current positions and their PnL
+2. Processes existing positions:
+   - Gets new predictions for open positions
+   - Closes positions if prediction changes
+3. Looks for new trading opportunities:
+   - Analyzes all available trading pairs
+   - Places new orders based on LSTM predictions
+4. Implements error handling and retry mechanisms
+
+## Configuration
+
+The bot can be configured through the `TradingConfig` class:
+- `volume`: Trading volume in USDT
+- `tp_percentage`: Take profit percentage
+- `sl_percentage`: Stop loss percentage
+- `leverage`: Trading leverage (default: 1x)
+- `margin_type`: Margin type (ISOLATED/CROSSED)
+
+## Requirements
 
 - Python 3.8+
-- Binance account with API access
-- Basic understanding of cryptocurrency trading
+- TensorFlow 2.x
+- Binance Futures account with API access
+- Required Python packages:
+  - numpy
+  - pandas
+  - keras
+  - python-binance
+  - scikit-learn
 
+## Installation
 
+### Prerequisites
+- Python 3.8-3.11 (TensorFlow is not compatible with Python 3.13)
+- pip (Python package installer)
 
-## Trading Strategy Details
+### Setup Steps
 
-### Moving Average Crossover
-- Uses 20 and 50 period moving averages
-- Generates signals on MA crossovers
-- Helps identify trend direction and potential reversal points
+1. Clone the repository:
+```bash
+git clone https://github.com/halitince7/ai_trading_bot.git
+cd ai_trading_bot
+```
 
-### Linear Regression
-- Calculates regression line over 20 periods
-- Creates dynamic support/resistance bands
-- Identifies overbought/oversold conditions
-- Uses 2 standard deviation bands for trade signals
+2. Create and activate a virtual environment:
+```bash
+# Create virtual environment
+python -m venv venv
 
-### Combined Strategy
-- Requires confirmation from both strategies
-- Reduces false signals
-- More conservative approach for higher probability trades
+# Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+# venv\Scripts\activate
+```
 
-## Risk Management
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-The bot implements several risk management features:
-- Uses only 95% of available balance for trades
-- Implements minimum trade amount checks
-- Continuous error monitoring and handling
-- Hourly market analysis and decision making
+## Usage
 
-## Disclaimer
+Run the trading bot:
+```bash
+cd bots
+python future_trading.py
+```
 
-This trading bot is for educational and research purposes only. Cryptocurrency trading carries significant risks:
+## Risk Warning
 
-- The bot may not be profitable in all market conditions
+This trading bot is for educational and experimental purposes. Please note:
+- Cryptocurrency trading involves substantial risk
 - Past performance does not guarantee future results
 - Only trade with funds you can afford to lose
-- Thoroughly test the bot with small amounts before deploying with significant capital
+- Test thoroughly with small amounts before deploying significant capital
 
 ## Future Improvements
 
-- [ ] Implement backtesting functionality
-- [ ] Add more technical indicators
-- [ ] Include stop-loss and take-profit features
-- [ ] Add support for multiple trading pairs
-- [ ] Implement position sizing based on volatility
+- [ ] Add more sophisticated LSTM architectures
+- [ ] Implement portfolio management
+- [ ] Add backtesting capabilities
+- [ ] Include more technical indicators
 - [ ] Add web interface for monitoring
-- [ ] Include email/telegram notifications
+- [ ] Implement dynamic position sizing
+- [ ] Add more risk management features
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Binance API Documentation
-- Python-Binance library
-- SciPy and NumPy communities
-
-## Support
-
-For support, please open an issue in the GitHub repository or contact [your-email@example.com].
-
-
+This project is licensed under the MIT License.
