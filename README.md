@@ -61,6 +61,48 @@ The main loop orchestrates the entire trading process:
    - Places new orders based on LSTM predictions
 4. Implements error handling and retry mechanisms
 
+## Configuration Setup
+
+### Create config.py File
+Create a file named `config.py` in the `bots` directory with the following structure:
+
+```python
+config = {
+    "name": "binance",
+    "key": "your_binance_api_key",
+    "secret": "your_binance_api_secret"
+}
+```
+
+### Configuration Parameters
+
+#### Binance API Settings
+- `name`: Always set to "binance"
+- `key`: Your Binance API key
+- `secret`: Your Binance API secret key
+  - Generate these from your Binance account under API Management
+  - Ensure Futures Trading is enabled for your API key
+
+#### Trading Parameters
+- `volume`: Amount in USDT for each trade
+- `tp_percentage`: Take profit target (percentage)
+- `sl_percentage`: Stop loss limit (percentage)
+- `leverage`: Trading leverage (1x to 20x)
+- `margin_type`: ISOLATED or CROSSED margin type
+
+#### Trading Pairs
+List of cryptocurrency pairs to trade (must be valid Binance Futures trading pairs)
+
+#### LSTM Model Parameters
+- `lookback_period`: Historical data points used for prediction
+- `prediction_threshold`: Minimum confidence level for trade execution
+
+### Security Notes
+- Never commit your `config.py` file to version control
+- Keep your API keys secure and never share them
+- Use IP restrictions in Binance API settings
+- Add `config.py` to your `.gitignore` file
+
 ## Configuration
 
 The bot can be configured through the `TradingConfig` class:
