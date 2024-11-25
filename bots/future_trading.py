@@ -404,7 +404,7 @@ def main():
                     if symbol not in current_positions and symbol not in current_orders:
                         klines = trader.get_historical_klines(symbol)
                         prediction = lstm_predictor.lstm_signal(klines)
-                        
+                        print(prediction.upper(), symbol)
                         if prediction == 'up':
                             trader.place_order(symbol, 'buy')
                         elif prediction == 'down':
